@@ -1,11 +1,13 @@
 import torch
 
+from speechbrain.inference import Pretrained
+
 from quantization.static_quant import StaticQuant
-from quantization.utils import get_module, set_module
+from quantization.utils import get_attr, set_attr
 
 
 def custom_quantize(
-    model,
+    model: Pretrained,
     dynamic_modules,
     static_modules,
     calibration_samples,
@@ -68,11 +70,11 @@ def custom_quantize(
         }
 
     for module in dynamic_modules:
-        set_module(
-            model,
+        set_attr(
+            model.mods,
             module,
             torch.quantization.quantize_dynamic(
-                get_module(model, module),
+                get_attr(model.mods, module),
                 dynamic_targets,
                 dtype=dynamic_dtype,
             ),
@@ -82,12 +84,12 @@ def custom_quantize(
     # Static Quantization                            #
     ##################################################
     for module in static_modules:
-        set_module(
-            model,
+        set_attr(
+            model.mods,
             module,
-            StaticQuant(get_module(model, module)),
+            StaticQuant(get_attr(model.mods, module)),
         )
-        get_module(model, module).qconfig = static_qconfig
+        get_attr(model.mods, module).qconfig = static_qconfig
 
     torch.ao.quantization.prepare(model, inplace=True)
 
