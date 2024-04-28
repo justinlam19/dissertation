@@ -1,13 +1,12 @@
 import torch
-
-from speechbrain.inference import Pretrained
+import torch.nn as nn
 
 from quantization.static_quant import StaticQuant
-from quantization.utils import get_attr, set_attr
+from quantization.utils import get_module, set_module
 
 
 def custom_quantize(
-    model: Pretrained,
+    model,
     dynamic_modules,
     static_modules,
     calibration_samples,
@@ -59,41 +58,66 @@ def custom_quantize(
     ##################################################
     # Dynamic Quantization                           #
     ##################################################
-    if dynamic_targets is None:
-        dynamic_targets = {
-            torch.nn.LSTM,
-            torch.nn.GRU,
-            torch.nn.RNNCell,
-            torch.nn.GRUCell,
-            torch.nn.LSTMCell,
-            torch.nn.Linear,
-        }
-
-    for module in dynamic_modules:
-        set_attr(
-            model.mods,
-            module,
-            torch.quantization.quantize_dynamic(
-                get_attr(model.mods, module),
-                dynamic_targets,
-                dtype=dynamic_dtype,
-            ),
-        )
+    dynamic_quantize(
+        model=model,
+        modules=dynamic_modules,
+        targets=dynamic_targets,
+        dtype=dynamic_dtype,
+        quantize_fn=torch.quantization.quantize_dynamic,
+    )
 
     ##################################################
     # Static Quantization                            #
     ##################################################
-    for module in static_modules:
-        set_attr(
-            model.mods,
-            module,
-            StaticQuant(get_attr(model.mods, module)),
-        )
-        get_attr(model.mods, module).qconfig = static_qconfig
+    static_quantize(
+        model=model,
+        modules=static_modules,
+        calibration_samples=calibration_samples,
+        qconfig=static_qconfig,
+        prepare_fn=torch.ao.quantization.prepare,
+        convert_fn=torch.ao.quantization.convert,
+    )
 
-    torch.ao.quantization.prepare(model, inplace=True)
 
-    for sample in calibration_samples:
-        model.transcribe_batch(sample.unsqueeze(0), torch.tensor([1.0]))
+def dynamic_quantize(model, modules, targets, dtype, quantize_fn):
+    if modules is not None and len(modules) > 0:
+        if targets is None:
+            targets = {
+                nn.LSTM,
+                nn.GRU,
+                nn.RNNCell,
+                nn.GRUCell,
+                nn.LSTMCell,
+                nn.Linear,
+            }
 
-    torch.ao.quantization.convert(model, inplace=True)
+        for module in modules:
+            quantize_fn(
+                model=get_module(model, module),
+                qconfig_spec=targets,
+                dtype=dtype,
+                inplace=True,
+            )
+
+
+def static_quantize(
+    model, modules, calibration_samples, qconfig, prepare_fn, convert_fn
+):
+    if modules is not None and len(modules) > 0:
+        if calibration_samples is None or len(calibration_samples) == 0:
+            raise Exception("No calibration samples provided for static quantization.")
+
+        for module in modules:
+            set_module(
+                model,
+                module,
+                StaticQuant(get_module(model, module)),
+            )
+            get_module(model, module).qconfig = qconfig
+
+        prepare_fn(model=model, inplace=True)
+
+        for sample in calibration_samples:
+            model.transcribe_batch(sample.unsqueeze(0), torch.tensor([1.0]))
+
+        convert_fn(model=model, inplace=True)
