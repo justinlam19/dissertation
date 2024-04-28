@@ -1,11 +1,11 @@
 import gc
-import numpy as np
-
 from copy import deepcopy
+
+import numpy as np
 from speechbrain.inference.ASR import EncoderASR
 
-from quantization.quantization import custom_quantize
 from benchmark.benchmark import benchmark
+from quantization.quantization import custom_quantize
 from utils.data import get_samples, random_choice
 
 model_src = "speechbrain/asr-wav2vec2-commonvoice-14-en"

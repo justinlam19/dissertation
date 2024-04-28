@@ -1,7 +1,7 @@
 import functools
+
 import speechbrain
 import torch
-
 from speechbrain.inference.ASR import EncoderASR
 
 

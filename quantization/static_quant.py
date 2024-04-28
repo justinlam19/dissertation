@@ -1,6 +1,5 @@
 import torch.nn as nn
-
-from torch.ao.quantization import QuantStub, DeQuantStub
+from torch.ao.quantization import DeQuantStub, QuantStub
 
 
 class StaticQuant(nn.Module):

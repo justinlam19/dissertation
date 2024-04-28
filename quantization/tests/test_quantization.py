@@ -1,8 +1,8 @@
+from unittest.mock import MagicMock, call
+
 import pytest
 import torch
 import torch.nn as nn
-
-from unittest.mock import call, MagicMock
 
 from quantization.quantization import dynamic_quantize, static_quantize
 from quantization.static_quant import StaticQuant

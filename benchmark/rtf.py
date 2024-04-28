@@ -1,6 +1,6 @@
 import time
-import torch
 
+import torch
 from speechbrain.inference.ASR import EncoderASR, EncoderDecoderASR
 
 from benchmark.encoder_asr import generate, preprocess_input
