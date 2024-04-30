@@ -12,6 +12,14 @@ class EncoderASRWrapper(nn.Module):
         super().__init__()
         self.model = model
 
+    def __getattr__(self, name):
+        if name in self.__dict__:
+            return self.__dict__[name]
+        elif name in self.__dict__["_modules"]:
+            return self.__dict__["_modules"][name]
+        else:
+            return getattr(self.__dict__["_modules"]["model"], name)
+
     def preprocess_input(self, input):
         with torch.no_grad():
             wavs = input.unsqueeze(0)
