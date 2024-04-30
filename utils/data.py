@@ -23,7 +23,8 @@ def get_samples(root):
     return audios, references
 
 
-def random_choice(items, n):
-    np.random.seed(1337)
+def random_choice(items, n, seed=None):
+    if seed is not None:
+        np.random.seed(seed)
     indices = np.random.choice(len(items), n)
     return list(itemgetter(*indices)(items))

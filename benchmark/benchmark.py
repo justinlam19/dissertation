@@ -1,6 +1,6 @@
 import tqdm
-
-from benchmark.rtf import timed_transcribe
+from speechbrain.inference.ASR import EncoderASR
+from benchmark.encoder_asr_wrapper import EncoderASRWrapper
 from benchmark.wer import compute_wer
 
 
@@ -9,11 +9,16 @@ def benchmark(model, samples, references):
     total_cpu_time = 0
     outputs = []
 
+    if isinstance(model, EncoderASR):
+        wrapper = EncoderASRWrapper()
+    else:
+        raise NotImplementedError
+
     for sample in tqdm.tqdm(samples[:10], desc="warming up"):
-        timed_transcribe(model, sample)
+        wrapper.timed_transcribe(sample)
 
     for sample in tqdm.tqdm(samples, desc="evaluating"):
-        output, duration = timed_transcribe(model, sample)
+        output, duration = wrapper.timed_transcribe(sample)
         outputs.append(output)
         total_cpu_time += duration
 
