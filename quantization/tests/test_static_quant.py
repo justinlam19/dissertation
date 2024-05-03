@@ -11,7 +11,7 @@ class TestStaticQuantInit:
     def test_init(self):
         # GIVEN
         #      model is provided
-        model = MagicMock()
+        model = MagicMock(spec=nn.Module)
 
         # WHEN
         #      StaticQuant object is initialized with model

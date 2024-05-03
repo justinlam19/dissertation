@@ -4,3 +4,7 @@ __pycache__/
 .mypy_cache/
 .coverage
 htmlcov/
+pretrained/
+librispeech_dev_clean/
+en_5gram.arpa
+wav2vec2_checkpoint/
