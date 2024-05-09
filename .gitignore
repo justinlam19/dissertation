@@ -8,3 +8,4 @@ pretrained/
 librispeech_dev_clean/
 en_5gram.arpa
 wav2vec2_checkpoint/
+output/

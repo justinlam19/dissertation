@@ -5,7 +5,7 @@ import numpy as np
 from speechbrain.dataio.dataio import read_audio
 
 
-def get_samples(root):
+def get_librispeech_data(root):
     audios = []
     references = []
     for book in os.listdir(root):

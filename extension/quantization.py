@@ -73,7 +73,7 @@ def measure_wer(model, modules, mode, samples, references):
     return compute_wer(references, hypotheses)
 
 
-def low_bit_quantize(
+def low_bit_benchmark(
     model,
     modules,
     bits,

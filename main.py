@@ -6,7 +6,7 @@ from speechbrain.inference.ASR import EncoderASR
 
 from benchmark.benchmark import benchmark
 from quantization.quantization import custom_quantize
-from utils.data import get_samples, random_choice
+from data.data import get_librispeech_data, random_choice
 
 model_src = "speechbrain/asr-wav2vec2-commonvoice-14-en"
 model_savedir = "pretrained/asr-wav2vec2-commonvoice-14-en"
@@ -17,7 +17,7 @@ asr_model = EncoderASR.from_hparams(
     savedir=model_savedir,
 )
 
-audios, references = get_samples("librispeech_dev_clean/LibriSpeech/dev-clean")
+audios, references = get_librispeech_data("librispeech_dev_clean/LibriSpeech/dev-clean")
 assert len(audios) == len(references)
 
 np.seed(1337)

@@ -21,20 +21,30 @@ class TestWER:
         assert str(exc_info.value) == error
 
     @pytest.mark.parametrize(
-        "references,hypotheses,expected_wer",
+        "references,hypotheses,expected_wer,lightweight",
         [
-            ("reference string", "hypothesis string", 50.0),
-            ("reference string", ["hypothesis list"], 100.0),
-            (["this reference is a list"], "this hypothesis is a string", 40.0),
+            ("reference string", "hypothesis string", 50.0, True),
+            ("reference string", ["hypothesis list"], 100.0, True),
+            (["this reference is a list"], "this hypothesis is a string", 40.0, True),
             (
                 ["both of these are lists", "this reference is a list"],
                 ["this is a list too", "hypothesis"],
                 100.0,
+                True,
+            ),
+            ("reference string", "hypothesis string", 50.0, False),
+            ("reference string", ["hypothesis list"], 100.0, False),
+            (["this reference is a list"], "this hypothesis is a string", 40.0, False),
+            (
+                ["both of these are lists", "this reference is a list"],
+                ["this is a list too", "hypothesis"],
+                100.0,
+                False,
             ),
         ],
     )
     def test_compute_wer_returns_correct_wer(
-        self, references, hypotheses, expected_wer
+        self, references, hypotheses, expected_wer, lightweight
     ):
         # GIVEN
         #      references are given as a string or a list of strings
@@ -42,9 +52,12 @@ class TestWER:
         #      the number of references and hypotheses match
         # WHEN
         #      the WER is computed
-        wer = compute_wer(references, hypotheses)
+        wer = compute_wer(references, hypotheses, lightweight)
 
         # THEN
         #      the computed WER is correct
         #      no exceptions are raised
+        #      both the speechbrain version
+        #          and the lcoal levenshtein version
+        #          return the same result
         assert wer == pytest.approx(expected_wer)

@@ -1,8 +1,7 @@
 from speechbrain.inference.ASR import EncoderASR, EncoderDecoderASR
 
 from benchmark.flops import count_flops
-from utils.data import get_samples
-
+from data.data import get_librispeech_data
 
 
 model_src = "speechbrain/asr-crdnn-commonvoice-14-en"
@@ -43,9 +42,8 @@ modules = [
 
 """
 
-audios, references = get_samples("librispeech_dev_clean/LibriSpeech/dev-clean")
+audios, references = get_librispeech_data("librispeech_dev_clean/LibriSpeech/dev-clean")
 assert len(audios) == len(references)
 
 f = count_flops(asr_model, modules, audios[1])
 print(f)
-

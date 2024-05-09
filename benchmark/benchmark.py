@@ -1,6 +1,6 @@
 import tqdm
-from speechbrain.inference.ASR import EncoderASR
-from benchmark.encoder_asr_wrapper import EncoderASRWrapper
+from speechbrain.inference.ASR import EncoderASR, EncoderDecoderASR
+from benchmark.wrapper import EncoderASRWrapper, EncoderDecoderASRWrapper
 from benchmark.wer import compute_wer
 
 
@@ -11,6 +11,8 @@ def benchmark(model, samples, references):
 
     if isinstance(model, EncoderASR):
         wrapper = EncoderASRWrapper()
+    elif isinstance(model, EncoderDecoderASR):
+        wrapper = EncoderDecoderASRWrapper()
     else:
         raise NotImplementedError
 

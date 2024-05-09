@@ -5,6 +5,7 @@ import speechbrain
 import torch
 import torch.nn as nn
 
+
 class Wrapper(nn.Module):
     def __init__(self, model):
         super().__init__()
@@ -16,7 +17,7 @@ class Wrapper(nn.Module):
         elif name in self.__dict__["_modules"]:
             return self.__dict__["_modules"][name]
         else:
-            return getattr(self.__dict__["_modules"]["model"], name)  
+            return getattr(self.__dict__["_modules"]["model"], name)
 
 
 class EncoderASRWrapper(Wrapper):
@@ -65,7 +66,7 @@ class EncoderASRWrapper(Wrapper):
             predictions = self.model.decoding_function(encoder_out, wav_lens)
             predicted_words = self.generate(predictions)
         return predicted_words[0], duration
-    
+
 
 class EncoderDecoderASRWrapper(Wrapper):
     def preprocess_input(self, input):
@@ -83,11 +84,10 @@ class EncoderDecoderASRWrapper(Wrapper):
             inputs = [encoder_out, wav_lens]
         predicted_tokens, _, _, _ = self.model.mods.decoder(*inputs)
         predicted_words = [
-            self.model.tokenizer.decode_ids(token_seq)
-            for token_seq in predicted_tokens
+            self.model.tokenizer.decode_ids(token_seq) for token_seq in predicted_tokens
         ]
         return predicted_words, predicted_tokens
-    
+
     def forward(self, input):
         with torch.no_grad():
             wavs, wav_lens = self.preprocess_input(input)
