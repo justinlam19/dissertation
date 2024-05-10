@@ -1,5 +1,10 @@
-from copy import deepcopy
+import sys
+
+sys.path.append("/home/justinlam19/dissertation")
+
+
 import gc
+from copy import deepcopy
 
 import numpy as np
 

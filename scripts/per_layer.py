@@ -1,3 +1,9 @@
+import pickle
+import sys
+
+sys.path.append("/home/justinlam19/dissertation")
+
+import argparse
 import gc
 from copy import deepcopy
 
@@ -8,9 +14,22 @@ from config.config import ModelConfig, QuantMethod
 from data.data import get_librispeech_data, random_choice
 from quantization.quantization import custom_quantize
 
-output_file = "output/per_layer.txt"
+parser = argparse.ArgumentParser()
+parser.add_argument("-o", "--output", help="output file path")
+parser.add_argument("-c", "--config", help="use preset config")
+args = parser.parse_args()
 
-model_config = ModelConfig.wav2vec2()
+output_file = args.output
+
+if args.config == "wav2vec2":
+    model_config = ModelConfig.wav2vec2()
+elif args.config == "crdnn":
+    model_config = ModelConfig.crdnn()
+else:
+    with open(args.config, "rb") as f:
+        model_config = pickle.load(f)
+
+
 asr_model = model_config.type.from_hparams(
     source=model_config.src,
     savedir=model_config.savedir,
