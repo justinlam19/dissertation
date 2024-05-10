@@ -8,9 +8,13 @@ from torchquant import QModuleState, QWrapper
 from torchquant.quantizers import AffineQuantizer
 from torchquant.range_observers import ExpAvgMinMax
 
-from extension.quantization import (calibrate, get_quant_modes,
-                                    low_bit_benchmark, measure_wer,
-                                    wrap_modules)
+from extension.quantization import (
+    calibrate,
+    get_quant_modes,
+    low_bit_benchmark,
+    measure_wer,
+    wrap_modules,
+)
 
 
 class TestGetQuantModes:
