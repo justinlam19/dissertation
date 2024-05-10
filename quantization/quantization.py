@@ -7,9 +7,9 @@ from quantization.utils import get_module, set_module
 
 def custom_quantize(
     model,
-    dynamic_modules,
-    static_modules,
-    calibration_samples,
+    dynamic_modules=None,
+    static_modules=None,
+    calibration_samples=None,
     dynamic_targets=None,
     dynamic_dtype=torch.qint8,
     static_qconfig=torch.ao.quantization.default_qconfig,
@@ -120,4 +120,4 @@ def static_quantize(
         for sample in calibration_samples:
             model.transcribe_batch(sample.unsqueeze(0), torch.tensor([1.0]))
 
-        convert_fn(model=model, inplace=True)
+        convert_fn(module=model, inplace=True)
