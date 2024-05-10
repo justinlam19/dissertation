@@ -16,7 +16,7 @@ output_file_path = "output/extension_per_layer_quant.txt"
 
 audios, references = get_librispeech_data("librispeech_dev_clean/LibriSpeech/dev-clean")
 assert len(audios) == len(references)
-np.seed(1337)
+np.random.seed(1337)
 calibration_samples = random_choice(audios, 10)
 n = 20
 audio_subset = audios[:n]

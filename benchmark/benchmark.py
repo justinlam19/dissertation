@@ -10,9 +10,9 @@ def benchmark(model, samples, references):
     outputs = []
 
     if isinstance(model, EncoderASR):
-        wrapper = EncoderASRWrapper()
+        wrapper = EncoderASRWrapper(model)
     elif isinstance(model, EncoderDecoderASR):
-        wrapper = EncoderDecoderASRWrapper()
+        wrapper = EncoderDecoderASRWrapper(model)
     else:
         raise NotImplementedError
 

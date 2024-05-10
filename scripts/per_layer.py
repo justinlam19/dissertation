@@ -37,7 +37,7 @@ asr_model = model_config.type.from_hparams(
 
 audios, references = get_librispeech_data("librispeech_dev_clean/LibriSpeech/dev-clean")
 assert len(audios) == len(references)
-np.seed(1337)
+np.random.seed(1337)
 calibration_samples = random_choice(audios, 10)
 n = 100
 audio_subset = audios[:n]
