@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import torch
-from speechbrain.inference.ASR import EncoderASR, EncoderDecoderASR
+from speechbrain.inference.ASR import EncoderASR
 
 from benchmark.flops import _encoder_flop_analysis, count_flops
 

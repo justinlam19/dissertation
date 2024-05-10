@@ -1,11 +1,12 @@
-from copy import deepcopy
 import gc
+from copy import deepcopy
+
 import numpy as np
 from speechbrain.inference.ASR import EncoderASR
 
+from data.data import get_librispeech_data, random_choice
 from extension.quantization import low_bit_benchmark
 from quantization.utils import get_module, set_module
-from data.data import get_librispeech_data, random_choice
 
 model_src = "speechbrain/asr-wav2vec2-commonvoice-14-en"
 model_savedir = "pretrained/asr-wav2vec2-commonvoice-14-en"

@@ -1,13 +1,16 @@
 from collections import OrderedDict
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 
 import pytest
+import torch
+import torch.nn as nn
 from torchquant import QModuleState, QWrapper
 from torchquant.quantizers import AffineQuantizer
 from torchquant.range_observers import ExpAvgMinMax
-import torch.nn as nn
 
-from extension.quantization import get_quant_modes, wrap_modules
+from extension.quantization import (calibrate, get_quant_modes,
+                                    low_bit_benchmark, measure_wer,
+                                    wrap_modules)
 
 
 class TestGetQuantModes:
@@ -71,10 +74,14 @@ class TestWrapModules:
         #      various combinations of weight and activation quantization
         model = MagicMock()
         modules = ["module1", "module2"]
-        model.mods = nn.Sequential(OrderedDict([
-            (modules[0], nn.Linear(1, 3)),
-            (modules[1], nn.Linear(3, 1)),
-        ]))
+        model.mods = nn.Sequential(
+            OrderedDict(
+                [
+                    (modules[0], nn.Linear(1, 3)),
+                    (modules[1], nn.Linear(3, 1)),
+                ]
+            )
+        )
         bits = 4
 
         # WHEN
@@ -106,4 +113,138 @@ class TestWrapModules:
                 assert module.acts_quantizer is None
 
 
+class TestCalibrate:
+    def test_calibrate(self):
+        # GIVEN
+        #      model, modules, and mode are specified
+        #      modules are QWrapped
+        model = MagicMock()
+        model.transcribe_batch = MagicMock()
+        modules = ["module1", "module2"]
+        model.mods = nn.Sequential(
+            OrderedDict(
+                [
+                    (modules[0], nn.Linear(1, 3)),
+                    (modules[1], nn.Linear(3, 1)),
+                ]
+            )
+        )
+        wrap_modules(
+            model=model,
+            modules=modules,
+            bits=4,
+            quantize_weights=True,
+            quantize_activations=False,
+        )
+        mode = QModuleState.CALIBRATION
 
+        mock_sample1_unsqueeze = 42
+        mock_sample2_unsqueeze = 1337
+        sample1 = MagicMock()
+        sample1.unsqueeze.return_value = mock_sample1_unsqueeze
+        sample2 = MagicMock()
+        sample2.unsqueeze.return_value = mock_sample2_unsqueeze
+        samples = [sample1, sample2]
+        expected_transcribe_calls = [
+            call(mock_sample1_unsqueeze, torch.tensor([1.0])),
+            call(mock_sample2_unsqueeze, torch.tensor([1.0])),
+        ]
+
+        # WHEN
+        #      model is calibrated
+        calibrate(model=model, modules=modules, mode=mode, samples=samples)
+
+        # THEN
+        #      modules are correctly set to the provided mode
+        #      transcribe_batch is given correct inputs
+        assert model.mods.module1.mode == mode
+        assert model.mods.module2.mode == mode
+        model.transcribe_batch.assert_has_calls(expected_transcribe_calls)
+
+
+class TestMeasureWER:
+    def test_measure_wer(self):
+        # GIVEN
+        #      model, modules, and mode are specified
+        #      modules are QWrapped
+        model = MagicMock()
+        modules = ["module1", "module2"]
+        model.mods = nn.Sequential(
+            OrderedDict(
+                [
+                    (modules[0], nn.Linear(1, 3)),
+                    (modules[1], nn.Linear(3, 1)),
+                ]
+            )
+        )
+        wrap_modules(
+            model=model,
+            modules=modules,
+            bits=4,
+            quantize_weights=True,
+            quantize_activations=False,
+        )
+        mode = QModuleState.QUANT_EVAL
+        samples = [MagicMock(), MagicMock()]
+        references = ["reference one", "reference two"]
+        model.transcribe_batch = MagicMock()
+        model.transcribe_batch.return_value = "reference"
+        expected_wer = 50.0
+
+        # WHEN
+        #      model wer is measured
+        wer = measure_wer(
+            model=model,
+            modules=modules,
+            mode=mode,
+            samples=samples,
+            references=references,
+        )
+
+        # THEN
+        #      modules are correctly set to the provided mode
+        #      correct WER is computed
+        assert model.mods.module1.mode == mode
+        assert model.mods.module2.mode == mode
+        assert wer == pytest.approx(expected_wer)
+
+
+class TestLowBitBenchmark:
+    def test_low_bit_benchmark(self):
+        # GIVEN
+        #      all inputs are specified correctly
+        model = MagicMock()
+        modules = ["module1", "module2"]
+        model.mods = nn.Sequential(
+            OrderedDict(
+                [
+                    (modules[0], nn.Linear(1, 3)),
+                    (modules[1], nn.Linear(3, 1)),
+                ]
+            )
+        )
+        bits = 4
+        calibration_samples = [MagicMock()]
+        samples = [MagicMock(), MagicMock()]
+        references = ["reference one", "reference two"]
+        model.transcribe_batch = MagicMock()
+        model.transcribe_batch.return_value = "reference"
+        expected_wer = 50.0
+
+        # WHEN
+        #      the performance of a low bit quantized model is benchmarked
+        wer = low_bit_benchmark(
+            model=model,
+            modules=modules,
+            bits=bits,
+            samples=samples,
+            references=references,
+            calibration_samples=calibration_samples,
+            quantize_weights=True,
+            quantize_activations=False,
+        )
+
+        # THEN
+        #      no errors
+        #      the correct WER is computed
+        assert wer == pytest.approx(expected_wer)
