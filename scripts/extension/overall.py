@@ -13,7 +13,7 @@ from extension.quantization import (
     wrap_modules,
 )
 
-output_file_path = "output/extension.txt"
+output_file_path = "output/extension_overall.txt"
 
 audios, references = get_librispeech_data("librispeech_dev_clean/LibriSpeech/dev-clean")
 assert len(audios) == len(references)
@@ -33,7 +33,7 @@ wer = measure_wer(
     references=ref_subset,
 )
 with open(output_file_path, "a+") as f:
-    f.write(f"Original model \nwer: {wer}\n\n")
+    f.write(f"Original model \nWER(%): {wer}\n\n")
 del m
 gc.collect()
 
@@ -82,7 +82,7 @@ wer = measure_wer(
 )
 with open(output_file_path, "a+") as f:
     f.write(
-        f"Mixed resolution quantization (5 enc 3 proj 5 extractor 6 layers) \nwer: {wer}\n\n"
+        f"Mixed resolution quantization (5 enc 3 proj 5 extractor 6 layers) \nWER(%): {wer}\n\n"
     )
 del m
 gc.collect()

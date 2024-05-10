@@ -2,27 +2,24 @@ import gc
 from copy import deepcopy
 
 import numpy as np
-from speechbrain.inference.ASR import EncoderASR
 
 from benchmark.benchmark import benchmark
-from quantization.quantization import custom_quantize
+from config.config import ModelConfig, QuantMethod
 from data.data import get_librispeech_data, random_choice
+from quantization.quantization import custom_quantize
 
-model_src = "speechbrain/asr-wav2vec2-commonvoice-14-en"
-model_savedir = "pretrained/asr-wav2vec2-commonvoice-14-en"
-output_file = "output/output.txt"
+output_file = "output/wav2vec2_overall.txt"
 
-asr_model = EncoderASR.from_hparams(
-    source=model_src,
-    savedir=model_savedir,
+model_config = ModelConfig.wav2vec2()
+asr_model = model_config.type.from_hparams(
+    source=model_config.src,
+    savedir=model_config.savedir,
 )
 
 audios, references = get_librispeech_data("librispeech_dev_clean/LibriSpeech/dev-clean")
 assert len(audios) == len(references)
-
 np.seed(1337)
 calibration_samples = random_choice(audios, 10)
-
 n = 100
 audio_subset = audios[:n]
 ref_subset = references[:n]
@@ -35,12 +32,21 @@ with open(output_file, "w+") as f:
 del original_model
 gc.collect()
 
-dynamic_modules = ["encoder.wav2vec2.model.encoder.layers", "encoder.enc"]
-static_modules = [
-    "encoder.wav2vec2.model.feature_projection",
-    "encoder.wav2vec2.model.feature_extractor",
-]
 quantized_model = deepcopy(asr_model)
+model_config.module_config["encoder.wav2vec2.model.feature_projection"] = [
+    QuantMethod.STATIC
+]
+model_config.module_config["encoder.ctc_lin"] = []
+dynamic_modules = [
+    module
+    for module in model_config.modules
+    if QuantMethod.DYNAMIC in model_config.module_config[module]
+]
+static_modules = [
+    module
+    for module in model_config.modules
+    if QuantMethod.STATIC in model_config.module_config[module]
+]
 custom_quantize(
     model=quantized_model,
     dynamic_modules=dynamic_modules,
@@ -50,6 +56,8 @@ custom_quantize(
 quantized_model.eval()
 wer, rtf = benchmark(quantized_model, audio_subset, ref_subset)
 with open(output_file, "w+") as f:
-    f.write(f"Original Model\nWER(%): {wer}\nRTF: {rtf}\n\n")
+    f.write(
+        f"Quantized Model (dynamic enc, layers; static proj, extract)\nWER(%): {wer}\nRTF: {rtf}\n\n"
+    )
 del quantized_model
 gc.collect()

@@ -31,6 +31,6 @@ with open(output_file_path, "w+") as f:
                 references=ref_subset,
                 calibration_samples=calibration_samples,
             )
-            f.write(f"Module: {module}\nBits: {bits}\nWER:{wer}\n\n")
+            f.write(f"Module: {module}\nBits: {bits}\nWER(%):{wer}\n\n")
             del m
             gc.collect()
