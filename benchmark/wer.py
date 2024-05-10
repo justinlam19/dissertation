@@ -3,7 +3,9 @@ from collections import Counter
 from speechbrain.utils.edit_distance import accumulatable_wer_stats
 
 
-def compute_wer(references: list[str], hypotheses: list[str], lightweight=False):
+def compute_wer(
+    references: str | list[str], hypotheses: str | list[str], lightweight=False
+):
     if isinstance(references, str):
         references = [references.split()]
     else:

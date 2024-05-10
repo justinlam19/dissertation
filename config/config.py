@@ -1,42 +1,61 @@
-from copy import deepcopy
-from typing_extensions import Self
+from __future__ import annotations
+from enum import Enum
 
-from speechbrain.inference.ASR import EncoderASR, EncoderDecoderASR
+from copy import deepcopy
+from enum import Enum
+from typing import Type
+
+from speechbrain.inference.ASR import EncoderASR, EncoderDecoderASR, Pretrained
+
+
+class QuantMethod(Enum):
+    STATIC = 0
+    DYNAMIC = 1
 
 
 class ModelConfig:
-    def __init__(self, src: str, savedir: str, modules:list[str], type: type):
+    def __init__(
+        self,
+        src: str,
+        savedir: str,
+        module_config: dict[str, list[QuantMethod]],
+        type: Type[Pretrained],
+    ):
         self.src = src
         self.savedir = savedir
         self.type = type
-        self.modules = deepcopy(modules)
+        self.module_config = deepcopy(module_config)
+        self.modules = list(self.module_config.keys())
 
     @staticmethod
-    def wav2vec2() -> Self:
+    def wav2vec2() -> ModelConfig:
         return ModelConfig(
             src="speechbrain/asr-wav2vec2-commonvoice-14-en",
             savedir="pretrained/asr-wav2vec2-commonvoice-14-en",
-            modules=[
-                "encoder.wav2vec2.model.feature_projection",
-                "encoder.wav2vec2.model.feature_extractor",
-                "encoder.wav2vec2.model.encoder.layers",
-                "encoder.enc",
-                "encoder.ctc_lin",
-            ],
+            module_config={
+                "encoder.wav2vec2.model.feature_projection": [
+                    QuantMethod.STATIC,
+                    QuantMethod.DYNAMIC,
+                ],
+                "encoder.wav2vec2.model.feature_extractor": [QuantMethod.STATIC],
+                "encoder.wav2vec2.model.encoder.layers": [QuantMethod.DYNAMIC],
+                "encoder.enc": [QuantMethod.DYNAMIC],
+                "encoder.ctc_lin": [QuantMethod.DYNAMIC],
+            },
             type=EncoderASR,
         )
-    
+
     @staticmethod
-    def crdnn() -> Self:
+    def crdnn() -> ModelConfig:
         return ModelConfig(
             src="speechbrain/asr-crdnn-commonvoice-14-en",
             savedir="pretrained/asr-crdnn-commonvoice-14-en",
-            modules=[
-                "encoder.model.RNN.rnn",
-                "encoder.model.DNN",
-                "decoder.dec",
-                "decoder.fc.w",
-                "encoder.model.CNN",
-            ],
+            module_config={
+                "encoder.model.RNN.rnn": [QuantMethod.DYNAMIC],
+                "encoder.model.DNN": [QuantMethod.DYNAMIC],
+                "decoder.dec": [QuantMethod.DYNAMIC],
+                "decoder.fc.w": [QuantMethod.STATIC, QuantMethod.DYNAMIC],
+                "encoder.model.CNN": [QuantMethod.STATIC],
+            },
             type=EncoderDecoderASR,
         )

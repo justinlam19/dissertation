@@ -54,18 +54,18 @@ def wrap_modules(
         )
 
 
-def calibrate(model, modules, mode, samples):
+def set_module_modes(model, modules, mode):
     model.eval()
     for module in modules:
         set_qmodule_state(get_module(model, module), mode)
+
+
+def calibrate(model, samples):
     for sample in samples:
         _ = model.transcribe_batch(sample.unsqueeze(0), torch.tensor([1.0]))
 
 
-def measure_wer(model, modules, mode, samples, references):
-    model.eval()
-    for module in modules:
-        set_qmodule_state(get_module(model, module), mode)
+def measure_wer(model, samples, references):
     hypotheses = []
     for sample in samples:
         output = model.transcribe_batch(sample.unsqueeze(0), torch.tensor([1.0]))
@@ -91,16 +91,22 @@ def low_bit_benchmark(
         quantize_weights=quantize_weights,
         quantize_activations=quantize_activations,
     )
-    calibrate(
+    set_module_modes(
         model=model,
         modules=modules,
         mode=quant_modes["calibration"],
+    )
+    calibrate(
+        model=model,
         samples=calibration_samples,
     )
-    wer = measure_wer(
+    set_module_modes(
         model=model,
         modules=modules,
         mode=quant_modes["evaluation"],
+    )
+    wer = measure_wer(
+        model=model,
         samples=samples,
         references=references,
     )

@@ -13,6 +13,7 @@ from extension.quantization import (
     get_quant_modes,
     low_bit_benchmark,
     measure_wer,
+    set_module_modes,
     wrap_modules,
 )
 
@@ -117,55 +118,6 @@ class TestWrapModules:
                 assert module.acts_quantizer is None
 
 
-class TestCalibrate:
-    def test_calibrate(self):
-        # GIVEN
-        #      model, modules, and mode are specified
-        #      modules are QWrapped
-        model = MagicMock()
-        model.transcribe_batch = MagicMock()
-        modules = ["module1", "module2"]
-        model.mods = nn.Sequential(
-            OrderedDict(
-                [
-                    (modules[0], nn.Linear(1, 3)),
-                    (modules[1], nn.Linear(3, 1)),
-                ]
-            )
-        )
-        wrap_modules(
-            model=model,
-            modules=modules,
-            bits=4,
-            quantize_weights=True,
-            quantize_activations=False,
-        )
-        mode = QModuleState.CALIBRATION
-
-        mock_sample1_unsqueeze = 42
-        mock_sample2_unsqueeze = 1337
-        sample1 = MagicMock()
-        sample1.unsqueeze.return_value = mock_sample1_unsqueeze
-        sample2 = MagicMock()
-        sample2.unsqueeze.return_value = mock_sample2_unsqueeze
-        samples = [sample1, sample2]
-        expected_transcribe_calls = [
-            call(mock_sample1_unsqueeze, torch.tensor([1.0])),
-            call(mock_sample2_unsqueeze, torch.tensor([1.0])),
-        ]
-
-        # WHEN
-        #      model is calibrated
-        calibrate(model=model, modules=modules, mode=mode, samples=samples)
-
-        # THEN
-        #      modules are correctly set to the provided mode
-        #      transcribe_batch is given correct inputs
-        assert model.mods.module1.mode == mode
-        assert model.mods.module2.mode == mode
-        model.transcribe_batch.assert_has_calls(expected_transcribe_calls)
-
-
 class TestMeasureWER:
     def test_measure_wer(self):
         # GIVEN
@@ -189,6 +141,51 @@ class TestMeasureWER:
             quantize_activations=False,
         )
         mode = QModuleState.QUANT_EVAL
+
+        # WHEN
+        #      module modes are set
+        set_module_modes(model, modules, mode)
+
+        # THEN
+        #      modules are correctly set to the provided mode
+        assert model.mods.module1.mode == mode
+        assert model.mods.module2.mode == mode
+
+
+class TestCalibrate:
+    def test_calibrate(self):
+        # GIVEN
+        #      model, modules, and mode are specified
+        #      modules are QWrapped
+        model = MagicMock()
+        model.transcribe_batch = MagicMock()
+        mock_sample1_unsqueeze = 42
+        mock_sample2_unsqueeze = 1337
+        sample1 = MagicMock()
+        sample1.unsqueeze.return_value = mock_sample1_unsqueeze
+        sample2 = MagicMock()
+        sample2.unsqueeze.return_value = mock_sample2_unsqueeze
+        samples = [sample1, sample2]
+        expected_transcribe_calls = [
+            call(mock_sample1_unsqueeze, torch.tensor([1.0])),
+            call(mock_sample2_unsqueeze, torch.tensor([1.0])),
+        ]
+
+        # WHEN
+        #      model is calibrated
+        calibrate(model=model, samples=samples)
+
+        # THEN
+        #      transcribe_batch is given correct inputs
+        model.transcribe_batch.assert_has_calls(expected_transcribe_calls)
+
+
+class TestMeasureWER:
+    def test_measure_wer(self):
+        # GIVEN
+        #      model, modules, and mode are specified
+        #      modules are QWrapped
+        model = MagicMock()
         samples = [MagicMock(), MagicMock()]
         references = ["reference one", "reference two"]
         model.transcribe_batch = MagicMock()
@@ -199,17 +196,12 @@ class TestMeasureWER:
         #      model wer is measured
         wer = measure_wer(
             model=model,
-            modules=modules,
-            mode=mode,
             samples=samples,
             references=references,
         )
 
         # THEN
-        #      modules are correctly set to the provided mode
         #      correct WER is computed
-        assert model.mods.module1.mode == mode
-        assert model.mods.module2.mode == mode
         assert wer == pytest.approx(expected_wer)
 
 
