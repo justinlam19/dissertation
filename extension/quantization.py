@@ -69,8 +69,8 @@ def calibrate(model, samples):
 def measure_wer(model, samples, references):
     hypotheses = []
     for sample in samples:
-        output = model.transcribe_batch(sample.unsqueeze(0), torch.tensor([1.0]))
-        hypotheses.append(output)
+        output, _ = model.transcribe_batch(sample.unsqueeze(0), torch.tensor([1.0]))
+        hypotheses.append(output[0])
     return compute_wer(references, hypotheses)
 
 
