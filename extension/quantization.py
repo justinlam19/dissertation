@@ -1,9 +1,10 @@
 import torch
-from torchquant import set_qmodule_state, QModuleState, QWrapper
-from torchquant.range_observers import ExpAvgMinMax
+from torchquant import QModuleState, set_qmodule_state
 from torchquant.quantizers import AffineQuantizer
+from torchquant.range_observers import ExpAvgMinMax
 
 from benchmark.wer import compute_wer
+from extension.extend_qwrapper import ExtendedQWrapper
 from quantization.utils import get_module, set_module
 
 
@@ -46,7 +47,7 @@ def wrap_modules(
         set_module(
             model,
             module,
-            QWrapper(
+            ExtendedQWrapper(
                 get_module(model, module),
                 weight_quantizer=weight_quantizer,
                 acts_quantizer=acts_quantizer,

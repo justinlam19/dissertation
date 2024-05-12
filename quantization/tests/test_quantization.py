@@ -268,7 +268,8 @@ class TestStaticQuantize:
         sample2.unsqueeze.return_value = mock_sample2_unsqueeze
         calibration_samples = [sample1, sample2]
         qconfig = "qconfig"
-        expected_prepare_convert_calls = [call(model=model, inplace=True)]
+        expected_prepare_calls = [call(model=model, inplace=True)]
+        expected_convert_calls = [call(module=model, inplace=True)]
         expeceted_transcribe_calls = [
             call(mock_sample1_unsqueeze, torch.tensor([1.0])),
             call(mock_sample2_unsqueeze, torch.tensor([1.0])),
@@ -294,6 +295,6 @@ class TestStaticQuantize:
         assert isinstance(model.mods.module2, StaticQuant)
         assert model.mods.module1.qconfig == qconfig
         assert model.mods.module2.qconfig == qconfig
-        prepare_fn.assert_has_calls(expected_prepare_convert_calls)
-        convert_fn.assert_has_calls(expected_prepare_convert_calls)
+        prepare_fn.assert_has_calls(expected_prepare_calls)
+        convert_fn.assert_has_calls(expected_convert_calls)
         model.transcribe_batch.assert_has_calls(expeceted_transcribe_calls)
