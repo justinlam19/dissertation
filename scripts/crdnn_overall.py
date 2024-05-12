@@ -1,6 +1,7 @@
 """
 Script for performing quantization on the crdnn-commonvoice-14-en model,
 using my chosen quantization approaches and parameters.
+Benchmarks and compares it to its unquantized counterpart.
 """
 
 import sys
