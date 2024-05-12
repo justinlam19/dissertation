@@ -1,3 +1,8 @@
+"""
+Script for performing quantization on the wav2vec2-commonvoice-14-en model,
+using my chosen quantization approaches and parameters.
+"""
+
 import sys
 
 sys.path.append("/home/justinlam19/dissertation")

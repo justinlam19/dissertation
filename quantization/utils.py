@@ -1,3 +1,8 @@
+"""
+Utility functions for getting nested attributes and attributes inside lists,
+specified only by string.
+"""
+
 from speechbrain.inference import Pretrained
 
 

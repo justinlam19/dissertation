@@ -8,12 +8,20 @@ from typing import Type
 from speechbrain.inference.ASR import EncoderASR, EncoderDecoderASR, Pretrained
 
 
+# Enum to indicate static/dynamic quantization for a given submodule
 class QuantMethod(Enum):
     STATIC = 0
     DYNAMIC = 1
 
 
 class ModelConfig:
+    """
+    Config of model, holds info about source path, saved directory, 
+    valid quantization methods per module, and module type.
+
+    wav2vec2 and crdnn (commonvoice-14-en) are pre-coded with the above information
+    for ease of use.
+    """
     def __init__(
         self,
         src: str,

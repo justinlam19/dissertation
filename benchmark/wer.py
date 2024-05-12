@@ -1,11 +1,18 @@
+"""
+Functions for computing WER, either using the inbuilt SpeechBrain library or
+a more lightweight self-implemented version that does not compute additional statistics
+"""
+
 from collections import Counter
 
 from speechbrain.utils.edit_distance import accumulatable_wer_stats
 
 
 def compute_wer(
-    references: str | list[str], hypotheses: str | list[str], lightweight=False
+    references: str | list[str], hypotheses: str | list[str], lightweight=True
 ):
+    # Conversion of strings to list form, to ensure compatibility
+    # with later functions called.
     if isinstance(references, str):
         references = [references.split()]
     else:

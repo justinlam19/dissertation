@@ -1,3 +1,8 @@
+"""
+Quick script for analyzing the number of flops per unit audio length
+of a provided model.
+"""
+
 import sys
 
 sys.path.append("/home/justinlam19/dissertation")

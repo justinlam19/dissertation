@@ -1,3 +1,9 @@
+"""
+Functions for investigating low bit quantization:
+determining quantization mode, wrapping modules with quantizers, 
+calibrating, measuring wer, and benchmarking.
+"""
+
 import torch
 from torchquant import QModuleState, set_qmodule_state
 from torchquant.quantizers import AffineQuantizer
@@ -35,6 +41,8 @@ def wrap_modules(
     quantize_activations,
 ):
     for module in modules:
+        # AffineQuantizer is chosen for being the most common quantizer
+        # ExpAvgMinMax is chosen over BatchMinMax because we typically work with single-element batches
         if quantize_weights:
             weight_quantizer = AffineQuantizer(bits, ExpAvgMinMax())
         else:

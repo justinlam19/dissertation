@@ -1,3 +1,8 @@
+"""
+Extends functionality of TorchQuant by allowing it to
+wrap Conv1d modules, which was not previously implemented.
+"""
+
 import torch.nn as nn
 import torch.nn.functional as F
 from torchquant import QWrapper

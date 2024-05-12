@@ -1,3 +1,7 @@
+"""
+Benchmark the WER and RTF of a model (EncoderASR or EncoderDecoderASR)
+"""
+
 import tqdm
 from speechbrain.inference.ASR import EncoderASR, EncoderDecoderASR
 from benchmark.wrapper import EncoderASRWrapper, EncoderDecoderASRWrapper
@@ -15,7 +19,8 @@ def benchmark(model, samples, references):
         wrapper = EncoderDecoderASRWrapper(model)
     else:
         raise NotImplementedError
-
+    
+    # warmup iterations reduce unwanted variation in timing
     for sample in tqdm.tqdm(samples[:10], desc="warming up"):
         wrapper.timed_transcribe(sample)
 

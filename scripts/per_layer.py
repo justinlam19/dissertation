@@ -1,3 +1,8 @@
+"""
+Script for experimenting with the effects of dynamic and static quantization.
+Uses argparse and pickle to allow for other configurations to be passed in.
+"""
+
 import pickle
 import sys
 

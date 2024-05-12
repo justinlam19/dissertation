@@ -1,3 +1,7 @@
+"""
+A script for evaluating mixed resolution quantization for the wav2vec2 model
+"""
+
 import sys
 
 sys.path.append("/home/justinlam19/dissertation")
@@ -43,12 +47,15 @@ gc.collect()
 
 m = deepcopy(model)
 m.eval()
+
+# The resolution for each major submodule
 bits_config = {
     "encoder.enc": 5,
     "encoder.wav2vec2.model.encoder.layers": 6,
     "encoder.wav2vec2.model.feature_projection": 3,
     "encoder.wav2vec2.model.feature_extractor": 5,
 }
+
 quantize_weights = True
 quantize_activations = False
 quant_modes = get_quant_modes(quantize_weights, quantize_activations)
@@ -65,6 +72,7 @@ modules = []
 for layers in module_config.values():
     modules += layers
 
+# pre-inference calibration
 set_module_modes(
     model=model,
     modules=modules,
@@ -74,6 +82,8 @@ calibrate(
     model=model,
     samples=calibration_samples,
 )
+
+# evaluation
 set_module_modes(
     model=model,
     modules=modules,
@@ -84,6 +94,7 @@ wer = measure_wer(
     samples=audio_subset,
     references=ref_subset,
 )
+
 with open(output_file_path, "a+") as f:
     f.write(
         f"Mixed resolution quantization (5 enc 3 proj 5 extractor 6 layers) \nWER(%): {wer}\n\n"

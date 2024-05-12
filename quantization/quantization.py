@@ -1,3 +1,7 @@
+"""
+Custom function for quantizing a given model with a mix of quantization approaches.
+"""
+
 import torch
 import torch.nn as nn
 
@@ -79,6 +83,7 @@ def custom_quantize(
     )
 
 
+# Get quantize_fn as parameter so the dependency can be mocked
 def dynamic_quantize(model, modules, targets, dtype, quantize_fn):
     if modules is not None and len(modules) > 0:
         if targets is None:
@@ -100,6 +105,7 @@ def dynamic_quantize(model, modules, targets, dtype, quantize_fn):
             )
 
 
+# Get prepare_fn, convert_fn as parameters so the dependencies can be mocked
 def static_quantize(
     model, modules, calibration_samples, qconfig, prepare_fn, convert_fn
 ):

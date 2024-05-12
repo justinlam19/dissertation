@@ -1,3 +1,9 @@
+"""
+Extends functionality of SpeechBrain to provide timing capabilities,
+as well as to modify the forward function to ensure compatibility with
+other functions (in particular, to have it only return a single value and not a tuple).
+"""
+
 import functools
 import time
 

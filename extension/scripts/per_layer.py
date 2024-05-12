@@ -1,3 +1,9 @@
+"""
+A script for evaluating quantization on a per-submodule basis,
+i.e. quantizing a single submodule and measuring the WER of the resulting
+model inference
+"""
+
 import sys
 
 sys.path.append("/home/justinlam19/dissertation")

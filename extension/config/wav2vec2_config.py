@@ -1,3 +1,8 @@
+"""
+Config for extension, i.e. low bit quantization,
+specifying the exact layers in the wav2vec2 model that can be quantized by TorchQuant
+"""
+
 from config.config import ModelConfig
 
 
