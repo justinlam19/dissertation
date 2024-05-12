@@ -80,11 +80,9 @@ class ExtendedQWrapper(QWrapper):
         elif type(layer) == nn.Linear:
             acts = F.linear(x, q_weight, layer.bias)
         else:
-            # We should never get here.
             raise TypeError
 
         if self.bn is not None:
-            # TODO: Implement BatchNorm Folding
             acts = self.bn(acts)
 
         if self.non_linearity is not None:
